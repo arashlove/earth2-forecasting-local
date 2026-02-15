@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "earth2-forecasting-local"
+version = "0.1.0"
+description = "FCN3 (FourCastNet3) local inference using Hugging Face weights and Earth2Studio"
+authors = []
+readme = "README.md"
+packages = [{ include = "earth2_forecasting_local", from = "src" }]
+
+[tool.poetry.scripts]
+run-fcn3 = "earth2_forecasting_local.run_fcn3:main"
+verify-fcn3 = "earth2_forecasting_local.verify:main"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+# Force modern numba/llvmlite (old versions fail to build on Python 3.12 / numpy 2)
+llvmlite = ">=0.41.0"
+# Pin to 1.x to avoid old numba/llvmlite that fail to build on Python 3.12
+moviepy = "^1.0"
+numba = ">=0.58.0"
+numpy = "*"
+ruamel-yaml = "*"
+scipy = "*"
+xarray = "*"
+huggingface-hub = "*"
+earth2studio = {git = "https://github.com/NVIDIA/earth2studio.git", extras = ["fcn3"]}
+# FCN3 needs makani; Earth2Studio pins this ref (see their install docs)
+makani = {git = "https://github.com/NVIDIA/modulus-makani.git", rev = "28f38e3e929ed1303476518552c64673bbd6f722"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
