@@ -19,7 +19,7 @@ All commands below are from the **project root**, in WSL2 or a terminal.
 
 ## Project layout
 
-Installable package (src layout). After `poetry install`, `run-fcn3` and `verify-fcn3` are available in the env.
+Installable package (src layout). After `poetry install`, `run-fcn3`, `run-fcn3-ensemble`, and `verify-fcn3` are available in the env.
 
 ```
 earth2-forecasting-local/
@@ -27,9 +27,10 @@ earth2-forecasting-local/
 ├── src/
 │   └── earth2_forecasting_local/
 │       ├── __init__.py
-│       ├── utils.py         # parse_time, rmse
-│       ├── run_fcn3.py      # 24h forecast (run-fcn3)
-│       └── verify.py         # RMSE vs ERA5 (verify-fcn3)
+│       ├── utils.py            # parse_time, rmse
+│       ├── run_fcn3.py         # 24h forecast, ARCO ICs, .npy (run-fcn3)
+│       ├── run_fcn3_ensemble.py # Ensemble run, NCAR_ERA5, NetCDF (run-fcn3-ensemble)
+│       └── verify.py           # RMSE vs ERA5 (verify-fcn3)
 └── README.md
 ```
 
@@ -157,6 +158,26 @@ Prints RMSE between the 24h forecast and ERA5 at t0+24h.
 
 ---
 
+## Alternative: Ensemble run (NCAR_ERA5 + NetCDF)
+
+A second workflow uses Earth2Studio’s built-in **ensemble** runner with **NCAR_ERA5** initial conditions and **NetCDF** output (no ARCO, no manual iterator):
+
+```bash
+poetry run run-fcn3-ensemble --time 2024-09-24 --nsteps 16 --nensemble 4 --out fcn3_ensemble.nc
+```
+
+- **`--time`**: One or more init times (e.g. `2024-09-24` or `2024-09-24 2024-09-25`).
+- **`--nsteps`**: Number of 6h steps (default: 16).
+- **`--nensemble`**: Ensemble size (default: 4).
+- **`--out`**: Output NetCDF path (default: `fcn3_ensemble.nc`).
+- **`--vars`**: Optional list of output variables (default: u10m, v10m, t2m, msl, tcwv).
+- **`--batch-size`**: Batch size for ensemble members (default: 1).
+- **`--no-verbose`**: Turn off progress messages.
+
+This uses `earth2studio.run.ensemble` with FCN3, NCAR_ERA5, NetCDF4Backend, and Zero perturbation (same pattern as the [Earth2Studio ensemble example](https://nvidia.github.io/earth2studio/examples/03_ensemble_workflow.html)).
+
+---
+
 ## One-shot (after `poetry install`)
 
 ```bash
@@ -180,6 +201,8 @@ Architecture and code stay the same (Earth2Studio); only the weights (and option
 ## What the CLIs do
 
 **`run-fcn3`** (`earth2_forecasting_local.run_fcn3`): loads FCN3 from HF via Earth2Studio, gets ERA5 IC from ARCO for `model.variables` at `t0`, builds `(1,1,1,C,H,W)` + coords, rolls out N×6h steps, saves last step as `(C,H,W)` to `--out`.
+
+**`run-fcn3-ensemble`** (`earth2_forecasting_local.run_fcn3_ensemble`): uses Earth2Studio’s ensemble workflow: FCN3 + NCAR_ERA5 + NetCDF4Backend + Zero perturbation; writes ensemble forecast to a NetCDF file.
 
 **`verify-fcn3`** (`earth2_forecasting_local.verify`): loads forecast `.npy` and ERA5 at t0+24h from ARCO, prints RMSE.
 

@@ -8,6 +8,7 @@ packages = [{ include = "earth2_forecasting_local", from = "src" }]
 
 [tool.poetry.scripts]
 run-fcn3 = "earth2_forecasting_local.run_fcn3:main"
+run-fcn3-ensemble = "earth2_forecasting_local.run_fcn3_ensemble:main"
 verify-fcn3 = "earth2_forecasting_local.verify:main"
 
 [tool.poetry.dependencies]
